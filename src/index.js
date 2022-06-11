@@ -7,23 +7,36 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const midGlb = function (req,res,next){
+    console.log("hi I am a Global middleware");
+    next()
+}
+const assignmentMW = function (req,res,next){
+   var currentdate = new Date();
+   var datetime = "Last Sync: " + currentdate.getDay() + "/" + 
+   currentdate.getMonth()  + "/" 
+   + currentdate.getFullYear() + " @ " 
+   + currentdate.getHours() + ":" 
+   + currentdate.getMinutes() + ":"
+    + currentdate.getSeconds();
+    let ip = req.ip
+    let url= req.originalUrl
+    console.log(`${datetime} ${ip} ${url}`)
+    next()
+}
+app.use(assignmentMW)
 
-mongoose.connect("mongodb+srv://functionup-cohort:G0Loxqc9wFEGyEeJ@cluster0.rzotr.mongodb.net/Pritesh8769811-DB?retryWrites=true&w=majority", {
+
+mongoose.connect("mongodb+srv://Bhushan17:X5Mk0c2iBmtDP8lC@cluster0.l9u2boz.mongodb.net/Bhushan1999-auther?retryWrites=true&w=majority", {
     useNewUrlParser: true
 })
 .then( () => console.log("MongoDb is connected"))
 .catch ( err => console.log(err) )
 
-app.use (
-    function (req, res, next) {
-        console.log ("inside GLOBAL MW");
-        next();
-  }
-  );
 
-app.use('/', route);
 
 
 app.listen(process.env.PORT || 3000, function () {
     console.log('Express app running on port ' + (process.env.PORT || 3000))
 });
+

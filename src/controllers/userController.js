@@ -77,10 +77,27 @@ const deleteUser = async function(req, res){
 
   res.send({status: true, data: user});
 }
+const postMessage = async function (req, res) {
+  let message = req.body.message
+  // Check if the token is present
+  // Check if the token present is a valid token
+  // Return a different error message in both these cases
+  
+  let user = await userModel.findById(req.params.userId)
+  if(!user) return res.send({status: false, msg: 'No such user exists'})
+  
+  let updatedPosts = user.post
+  //add the message to user's posts
+  updatedPosts.push(message)
+  let updatedUser = await userModel.findOneAndUpdate({_id: user._id},{post: updatedPosts}, {new: true})
 
+  //return the updated user document
+  return res.send({status: true, data: updatedUser})
+}
 
 module.exports.createUser = createUser;
-module.exports.getUserData = getUserData;
+module.exports.getUserData = getUserData; 
 module.exports.updateUser = updateUser;
 module.exports.loginUser = loginUser;
 module.exports.deleteUser=deleteUser;
+module.exports.postMessage=postMessage

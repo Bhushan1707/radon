@@ -17,29 +17,23 @@ const authUser = function(req, res, next){
   }
   next();
 }
-const authmid = function (req, res, next) {
+const auther = function (req, res, next) {
 
-  let token = req.headers["x-Auth-token"];
-  if (!token) token = req.headers["x-auth-token"];
+  let token = req.headers["x-auth-token"]
+  if(!token) return res.send({status: false, msg: "token must be present in the request header"})
+  let decodedToken = jwt.verify(token, 'functionup-radon')
 
-  //If no token is present in the request header return error
-  if (!token) return res.status(400).send({ status: false, msg: "token must be present" });
+  if(!decodedToken) return res.send({status: false, msg:"token is not valid"})
+  
+  //userId for which the request is made. In this case message to be posted.
+  let userToBeModified = req.params.userId
+  //userId for the logged-in user
+  let userLoggedIn = decodedToken.userId
 
-  console.log(token);
-
-  let decodedToken = jwt.verify(token, "functionup-uranium");
-  console.log(decodedToken);
-  if (!decodedToken)
-    return res.status(401).send({ status: false, msg: "token is invalid" });
-
-  let userId = req.params.userId;
-  // @ts-ignore
-  let decoded = decodedToken.userId;
-  if (userId != decoded) {
-    return res.status(403).send("user is not authorize to change");
-  }
+  //userId comparision to check if the logged-in user is requesting for their own data
+  if(userToBeModified != userLoggedIn) return res.send({status: false, msg: 'User logged is not allowed to modify the requested users data'})
 
   next();
 };
-
 module.exports.authUser = authUser;
+module.exports.auther=auther;

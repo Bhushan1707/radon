@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 
-const authUser = function(req, res, next){
+const autherisation = function(req, res, next){
+  try{
   let token = req.headers["x-Auth-token"];
   if (!token) {
     token = req.headers["x-auth-token"];
@@ -17,7 +18,14 @@ const authUser = function(req, res, next){
   }
   next();
 }
-const auther = function (req, res, next) {
+catch (err) {
+  console.log("This is the error :", err.message)
+  res.status(500).send({ msg: "Error", error: err.message })
+}
+
+}
+const auth1 = function (req, res, next) {
+  try{
 
   let token = req.headers["x-auth-token"]
   if(!token) return res.send({status: false, msg: "token must be present in the request header"})
@@ -34,6 +42,11 @@ const auther = function (req, res, next) {
   if(userToBeModified != userLoggedIn) return res.send({status: false, msg: 'User logged is not allowed to modify the requested users data'})
 
   next();
+  }
+  catch(err){
+    console.log("This is the error:",err.message)
+    res.send({msg:"Error",error:err.message})
+  }
 };
-module.exports.authUser = authUser;
-module.exports.auther=auther;
+module.exports.autherisation = autherisation;
+module.exports.auth1=auth1;

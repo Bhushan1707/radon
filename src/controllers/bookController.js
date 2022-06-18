@@ -8,7 +8,7 @@ const createBook = async function (req, res) {
         console.log(data)
         if ( Object.keys(data).length != 0) {
             let savedData = await BookModel.create(data)
-            res.status(201).send({ msg: savedData })
+            res.status(201).send({ msg: savedData }) 
         }
         else res.status(400).send({ msg: "BAD REQUEST"})
     }

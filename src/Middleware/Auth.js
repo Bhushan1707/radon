@@ -9,13 +9,15 @@ const jwtValidation = function (req, res, next) {
         if (!token) return res.status(400).send({ status: false, msg: "token must be present" });
 
         jwt.verify(token, "project-1", (err, decoded) => {
+            //Only if token validation Fails
             if (err) {
                 return res.status(401).send({
                     status: false,
                     msg: "Authentication Failed"
                 })
-            }
+            }//If token validaion Passes
             else {
+                //Attribute to store the value of decoded token 
                 req.token = decoded
                 next()
             }
@@ -28,9 +30,38 @@ const jwtValidation = function (req, res, next) {
 }
 
 
+const authoriseCreate = async function (req, res, next) {
+    try {
+        
+        let authorLoggedIn = req.token.authorId   //Accessing authorId from attribute
+        let authorAccessing = req.body.authorId  //AuthorId coming in request body
+        if (!authorAccessing.match(/^[0-9a-f]{24}$/)) {
+            return res.status(400).send({
+                status: false,
+                msg: "Not a valid ObjectId"
+            })
+        }
+        if (authorAccessing != authorLoggedIn) {
+            return res.status(403).send({
+                status: false,
+                msg: 'Author not authorised'
+            })
+        }
+
+        next()
+    }
+    catch (err) {
+        console.log("this error is from authorise create ", err.message)
+        res.status(500).send({ msg: err.message })
+    }
+}
+
+
+
 const authoriseByPath = async function (req, res, next) {
     try {
-        let authorLoggedIn = req.token.authorId
+        
+        let authorLoggedIn = req.token.authorId   //Accessing authorId from attribute
         let blogId = req.params.blogId
         if (!blogId.match(/^[0-9a-f]{24}$/)) {
             return res.status(400).send({
@@ -55,7 +86,7 @@ const authoriseByPath = async function (req, res, next) {
         next()
     }
     catch (err) {
-        console.log("this error is from authorisation ", err.message)
+        console.log("this error is from authorisationBy Path ", err.message)
         res.status(500).send({ msg: err.message })
     }
 }
@@ -64,8 +95,10 @@ const authoriseByPath = async function (req, res, next) {
 
 const authoriseByQuery = async function (req, res, next) {
     try {
-        let authorLoggedIn = req.token.authorId
+        let authorLoggedIn = req.token.authorId    //Accessing authorId from attribute
+
         let conditions = req.query
+        //Checks if condition for deletion is coming or not
         if (Object.keys(conditions).length == 0) {
             return res.status(400).send({
                 status: false,
@@ -90,7 +123,7 @@ const authoriseByQuery = async function (req, res, next) {
         let authorAccessing = await blogsModel.find({ $and: [conditions, { isDeleted: false }] })
        
         if (authorAccessing.length == 0) {
-            return res.status(400).send({
+            return res.status(404).send({
                 status: false,
                 msg: "No Blogs Found"
             })
@@ -104,15 +137,16 @@ const authoriseByQuery = async function (req, res, next) {
                 msg: "User Not Authorised"
             })
         }
-        req.id = authorLoggedIn
+        req.id = authorLoggedIn //attribute to store the author id from token
         next()
     }
     catch (err) {
-        console.log("this error is from authorisation ", err.message)
+        console.log("this error is from authorisation by query", err.message)
         res.status(500).send({ msg: err.message })
     }
 }
-
+//Exportimg the modules
 module.exports.jwtValidation = jwtValidation
+module.exports.authoriseCreate = authoriseCreate
 module.exports.authoriseByPath = authoriseByPath
 module.exports.authoriseByQuery = authoriseByQuery
